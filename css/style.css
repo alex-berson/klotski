@@ -1,0 +1,121 @@
+@font-face {
+    font-family: 'Roboto';
+    src: url(../fonts/roboto-regular-webfont.woff);
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src: url(../fonts/roboto-bold-webfont.woff);
+    font-weight: bold;
+}
+
+:root {
+    --board-size: 0.85;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    transition: opacity 2s ease;
+    margin: 0;
+    opacity: 1;
+}
+
+body:hover {
+    cursor: default;
+}
+
+#outer {
+    display: table;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+}
+  
+#middle {
+    display: table-cell;
+    vertical-align: middle;
+}
+  
+#inner {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+h1 {
+    color: maroon;
+    text-align: center;
+    font-size: calc(var(--board-size) / 2.8);
+    margin-top: -10px;
+    margin-bottom: 8px;
+} 
+
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 10px solid maroon;
+    width: calc(var(--board-size) - 5px);
+    height: calc(var(--board-size) + var(--board-size) / 4 - 5px);
+    border-radius: 7px;
+    gap: 5px;
+    margin: auto;
+    padding: 5px;
+}
+
+.cell {
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    background-color: lightgray;
+    width: calc(var(--board-size) / 4 - 5px);
+    height: calc(var(--board-size) / 4 -5px);
+}
+
+#designed {
+    text-align: center;
+    align-self: auto;
+    color: white;
+    font-size: 0.55em; 
+    margin-top: -1.33em;
+}
+
+@media (orientation: landscape) and (max-height: 460px) {
+
+    h1 {
+        display: none;
+    }
+
+    .board {
+        margin-top: 0;
+    }
+}
+
+@media (min-width: 460px) and (min-height: 460px) {
+
+    :root {
+        --board-size-big: 400px;
+    }
+
+    h1 {
+        font-size: 145px;
+        line-height: 110%;    
+    }
+
+    .board {
+        border: 15px solid maroon;
+        width: calc(var(--board-size-big) - 5px);
+        height: calc(var(--board-size-big) + var(--board-size-big) / 4 - 5px);
+    }
+
+    .cell {
+        width: calc(var(--board-size-big) / 4 - 5px);
+        height: calc(var(--board-size-big) / 4 - 5px);
+    }
+
+    #designed {
+        font-size: 0.8em; 
+        margin-top: -1.3em;
+    }
+}

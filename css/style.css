@@ -1,4 +1,4 @@
-@font-face {
+/* @font-face {
     font-family: 'Roboto';
     src: url(../fonts/roboto-regular-webfont.woff);
 }
@@ -7,14 +7,35 @@
     font-family: 'Roboto';
     src: url(../fonts/roboto-bold-webfont.woff);
     font-weight: bold;
+} */
+
+@font-face {
+    font-family: 'Roboto Slab';
+    src: url(../fonts/RobotoSlab-Regular-webfont.woff);
+}
+
+@font-face {
+    font-family: 'Roboto Slab';
+    src: url(../fonts/RobotoSlab-Bold-webfont.woff);
+    font-weight: bold;
 }
 
 :root {
     --board-size: 0.85;
+    --gap: 5px;
+    /* --blue: #009cdf; */
+    /* --green: #5ebd3e; */
+    /* --yellow: #ffb900; */
+    /* --red: #e23838; */
+
+    --blue: deepskyblue;
+    --green: green;
+    --yellow: gold;
+    --red: red;
 }
 
 body {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Roboto Slab', sans-serif;
     transition: opacity 2s ease;
     margin: 0;
     opacity: 1;
@@ -44,9 +65,9 @@ body:hover {
 }
 
 h1 {
-    color: maroon;
+    color: darkred;
     text-align: center;
-    font-size: calc(var(--board-size) / 2.8);
+    font-size: calc(var(--board-size) / 3.1);
     margin-top: -10px;
     margin-bottom: 8px;
 } 
@@ -54,31 +75,80 @@ h1 {
 
 .board {
     display: grid;
+    position: relative;
     grid-template-columns: repeat(4, 1fr);
-    border: 10px solid maroon;
-    width: calc(var(--board-size) - 5px);
-    height: calc(var(--board-size) + var(--board-size) / 4 - 5px);
+    border: 10px solid darkred;
+    width: calc(var(--board-size) - var(--gap));
+    height: calc(var(--board-size) + var(--board-size) / 4 - var(--gap));
     border-radius: 7px;
     gap: 5px;
     margin: auto;
     padding: 5px;
 }
 
+.board:after {
+    position: absolute;
+    top: calc(var(--board-size) + var(--board-size) / 4 + var(--gap));
+    left: 50%;
+    transform: translateX(-50%);
+    content: '';
+    background: white;
+    width: calc(var(--board-size) / 4 + var(--board-size) / 4 + var(--gap));
+    height: 10px;
+}
+
 .cell {
     display: grid;
+    position: relative;
+    border-radius: 7px;
+    background-color: whitesmoke;
+    width: calc(var(--board-size) / 4 - var(--gap));
+    height: calc(var(--board-size) / 4 - var(--gap));
+}
+
+.tile {
+    display: grid;
+    position: absolute;
     justify-content: center;
     align-content: center;
-    background-color: lightgray;
-    width: calc(var(--board-size) / 4 - 5px);
-    height: calc(var(--board-size) / 4 -5px);
+    cursor: pointer;
+    border-radius: 7px;
+}
+
+#t0 {
+    width: calc(var(--board-size) / 4 + var(--board-size) / 4 - var(--gap));
+    height: calc(var(--board-size) / 4 + var(--board-size) / 4 - var(--gap));
+    /* color: maroon; */
+    background-color: var(--red);
+    font-size: 5em;
+}
+
+#t1,#t2,#t3,#t4 {
+    width: calc(var(--board-size) / 4 - var(--gap));
+    height: calc(var(--board-size) / 4 + var(--board-size) / 4 - var(--gap));
+    background-color: var(--blue);
+}
+
+#t5 {
+    width: calc(var(--board-size) / 4 + var(--board-size) / 4 - var(--gap));
+    height: calc(var(--board-size) / 4 - var(--gap));
+    background-color: var(--green);
+}
+
+#t6,#t7,#t8,#t9 {
+    width: calc(var(--board-size) / 4 - var(--gap));
+    height: calc(var(--board-size) / 4 - var(--gap));
+    background-color: var(--yellow);
 }
 
 #designed {
+    position: relative;
     text-align: center;
     align-self: auto;
-    color: white;
+    color: maroon;
     font-size: 0.55em; 
-    margin-top: -1.33em;
+    margin-top: -1.25em;
+    /* opacity: 0.5; */
 }
 
 @media (orientation: landscape) and (max-height: 460px) {
@@ -99,23 +169,51 @@ h1 {
     }
 
     h1 {
-        font-size: 145px;
+        font-size: 129px;
         line-height: 110%;    
     }
 
     .board {
         border: 15px solid maroon;
-        width: calc(var(--board-size-big) - 5px);
-        height: calc(var(--board-size-big) + var(--board-size-big) / 4 - 5px);
+        width: calc(var(--board-size-big) - var(--gap));
+        height: calc(var(--board-size-big) + var(--board-size-big) / 4 - var(--gap));
+    }
+
+    .board:after {
+        position: absolute;
+        top: calc(var(--board-size-big) + var(--board-size-big) / 4 + var(--gap));
+        width: calc(var(--board-size-big) / 4 + var(--board-size-big) / 4 + var(--gap));
+        height: 15px;
     }
 
     .cell {
-        width: calc(var(--board-size-big) / 4 - 5px);
-        height: calc(var(--board-size-big) / 4 - 5px);
+        width: calc(var(--board-size-big) / 4 - var(--gap));
+        height: calc(var(--board-size-big) / 4 - var(--gap));
+    }
+
+    #t0 {
+        font-size: 150px;
+        width: calc(var(--board-size-big) / 4 + var(--board-size-big) / 4 - var(--gap));
+        height: calc(var(--board-size-big) / 4 + var(--board-size-big) / 4 - var(--gap));
+    }
+
+    #t1,#t2,#t3,#t4 {
+        width: calc(var(--board-size-big) / 4 - var(--gap));
+        height: calc(var(--board-size-big) / 4 + var(--board-size-big) / 4 - var(--gap));
+    }
+
+    #t5 {
+        width: calc(var(--board-size-big) / 4 + var(--board-size-big) / 4 - var(--gap));
+        height: calc(var(--board-size-big) / 4 - var(--gap));
+    }
+
+    #t6,#t7,#t8,#t9 {
+        width: calc(var(--board-size-big) / 4 - var(--gap));
+        height: calc(var(--board-size-big) / 4 - var(--gap));
     }
 
     #designed {
-        font-size: 0.8em; 
-        margin-top: -1.3em;
+        font-size: 0.7em; 
+        margin-top: -1.2em;
     }
 }

@@ -16,10 +16,6 @@ const fillBoard = () => {
     let places = [1,0,3,8,11,9,13,14,16,19];
     let cells = document.querySelectorAll('.cell');
     let tiles = document.querySelectorAll('.tile');
-    // let style = window.getComputedStyle(tiles[0]);
-    // let matrix = new WebKitCSSMatrix(style.transform);
-
-    // if (matrix.m41 != 0) return;
 
     for (let [i, n] of places.entries()) {
 
@@ -32,39 +28,6 @@ const fillBoard = () => {
         tiles[i].dataset.pos = n;
 
         tiles[i].style.transform = `translate(${offsetLeft}px, ${offsetTop}px)`;
-    }
-}
-
-const sizes = () => {
-
-    let tiles = document.querySelectorAll('.tile');
-    let cells = document.querySelectorAll('.cell');
-
-    let board = document.querySelector('.board');
-    let rectBoard = board.getBoundingClientRect();
-    let gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap'));
-    let borderWidth = parseInt(getComputedStyle(board).getPropertyValue('border-width'));
-
-    console.log(borderWidth); 
-    console.log(gap);
-
-    console.log(rectBoard.left, rectBoard.top, rectBoard.right, rectBoard.bottom);
-    console.log('');
-
-    for (let tile of tiles) {
-
-        let rectTile = tile.getBoundingClientRect();
-
-        console.log(rectTile.left, rectTile.top, rectTile.right, rectTile.bottom);
-    }
-
-    console.log('');
-
-    for (let cell of cells) {
-
-        let rectCell = cell.getBoundingClientRect();
-
-        console.log(rectCell.left, rectCell.top, rectCell.right, rectCell.bottom);
     }
 }
 
@@ -113,8 +76,6 @@ const checkMove = (tile1) => {
             || (rectTile.left - gap + 1 >= rectTile1.left && rectTile.right + gap - 1 <= rectTile1.right))) down = false;
     }
 
-    // console.log(left, right, up, down);
-
     return [left, right, up, down];
 }
 
@@ -153,11 +114,77 @@ const startMove = (e) => {
     }
 }
 
+const moveTile = (tile, dx, dy) => {
+
+    let style = window.getComputedStyle(tile);
+    let matrix = new WebKitCSSMatrix(style.transform);
+    let [left, right, up, down] = checkMove(tile);
+
+    if (dx < 0 && !left) dx = 0;
+    if (dx > 0 && !right) dx = 0;
+    if (dy < 0 && !up) dy = 0;
+    if (dy > 0 && !down) dy = 0;
+
+    if (dx == 0 && dy > 0) {
+
+        for (let y = 1; y <= dy; y++) {
+
+            let [left, right, up, down] = checkMove(tile);
+
+            if (!down || tile.classList.contains('horiz')) break;
+
+            tile.classList.add('vert');
+
+            tile.style.transform = `translate(${matrix.m41 + dx}px, ${matrix.m42 + y}px)`;
+        }
+    }
+
+    if (dx == 0 && dy < 0) {
+
+        for (let y = -1; y >= dy; y--) {
+
+            let [left, right, up, down] = checkMove(tile);
+
+            if (!up || tile.classList.contains('horiz')) break;
+
+            tile.classList.add('vert');
+
+            tile.style.transform = `translate(${matrix.m41 + dx}px, ${matrix.m42 + y}px)`;
+        }
+    }
+
+    if (dy == 0 && dx > 0) {
+
+        for (let x = 1; x <= dx; x++) {
+
+            let [left, right, up, down] = checkMove(tile);
+
+            if (!right || tile.classList.contains('vert')) break;
+
+            tile.classList.add('horiz');
+
+            tile.style.transform = `translate(${matrix.m41 + x}px, ${matrix.m42 + dy}px)`;
+        }
+    }
+
+    if (dy == 0 && dx < 0) {
+
+        for (let x = -1; x >= dx; x--) {
+
+            let [left, right, up, down] = checkMove(tile);
+
+            if (!left || tile.classList.contains('vert')) break;
+
+            tile.classList.add('horiz');
+
+            tile.style.transform = `translate(${matrix.m41 + x}px, ${matrix.m42 + dy}px)`;
+        }
+    }
+}
+
 const touchMove = (e) => {
 
     let tile = e.currentTarget;
-    let style = window.getComputedStyle(tile);
-    let matrix = new WebKitCSSMatrix(style.transform);
 
     let n = 0;
     
@@ -169,132 +196,19 @@ const touchMove = (e) => {
     tile.dataset.x = e.touches[n].clientX;
     tile.dataset.y = e.touches[n].clientY;
 
-    let [left, right, up, down] = checkMove(tile);
-
-    if (dx < 0 && !left) dx = 0;
-    if (dx > 0 && !right) dx = 0;
-    if (dy < 0 && !up) dy = 0;
-    if (dy > 0 && !down) dy = 0;
-
-    if (dx == 0 && dy > 0) {
-
-        for (let y = 1; y <= dy; y++) {
-
-            let [left, right, up, down] = checkMove(tile);
-
-            if (!down) break;
-
-            tile.style.transform = `translate(${matrix.m41 + dx}px, ${matrix.m42 + y}px)`;
-        }
-    }
-
-    if (dx == 0 && dy < 0) {
-
-        for (let y = -1; y >= dy; y--) {
-
-            let [left, right, up, down] = checkMove(tile);
-
-            if (!up) break;
-
-            tile.style.transform = `translate(${matrix.m41 + dx}px, ${matrix.m42 + y}px)`;
-        }
-    }
-
-    if (dy == 0 && dx > 0) {
-
-        for (let x = 1; x <= dx; x++) {
-
-            let [left, right, up, down] = checkMove(tile);
-
-            if (!right) break;
-
-            tile.style.transform = `translate(${matrix.m41 + x}px, ${matrix.m42 + dy}px)`;
-        }
-    }
-
-    if (dy == 0 && dx < 0) {
-
-        for (let x = -1; x >= dx; x--) {
-
-            let [left, right, up, down] = checkMove(tile);
-
-            if (!left) break;
-
-            tile.style.transform = `translate(${matrix.m41 + x}px, ${matrix.m42 + dy}px)`;
-        }
-    }
-
-    // tile.style.transform = `translate(${matrix.m41 + dx}px, ${matrix.m42 + dy}px)`;
+    moveTile(tile, dx, dy);
 }
 
 const mouseMove = (e) => {
 
     let tile = document.querySelector('.move');
-    let style = window.getComputedStyle(tile);
-    let matrix = new WebKitCSSMatrix(style.transform);
-
     let dx = e.clientX - tile.dataset.x;
     let dy = e.clientY - tile.dataset.y;
 
     tile.dataset.x = e.clientX;
     tile.dataset.y = e.clientY;
 
-    let [left, right, up, down] = checkMove(tile);
-
-    if (dx < 0 && !left) dx = 0;
-    if (dx > 0 && !right) dx = 0;
-    if (dy < 0 && !up) dy = 0;
-    if (dy > 0 && !down) dy = 0;
-
-    if (dx == 0 && dy > 0) {
-
-        for (let y = 1; y <= dy; y++) {
-
-            let [left, right, up, down] = checkMove(tile);
-
-            if (!down) break;
-
-            tile.style.transform = `translate(${matrix.m41 + dx}px, ${matrix.m42 + y}px)`;
-        }
-    }
-
-    if (dx == 0 && dy < 0) {
-
-        for (let y = -1; y >= dy; y--) {
-
-            let [left, right, up, down] = checkMove(tile);
-
-            if (!up) break;
-
-            tile.style.transform = `translate(${matrix.m41 + dx}px, ${matrix.m42 + y}px)`;
-        }
-    }
-
-    if (dy == 0 && dx > 0) {
-
-        for (let x = 1; x <= dx; x++) {
-
-            let [left, right, up, down] = checkMove(tile);
-
-            if (!right) break;
-
-            tile.style.transform = `translate(${matrix.m41 + x}px, ${matrix.m42 + dy}px)`;
-        }
-    }
-
-    if (dy == 0 && dx < 0) {
-
-        for (let x = -1; x >= dx; x--) {
-
-            let [left, right, up, down] = checkMove(tile);
-
-            if (!left) break;
-
-            tile.style.transform = `translate(${matrix.m41 + x}px, ${matrix.m42 + dy}px)`;
-        }
-    }
-
-    // tile.style.transform = `translate(${matrix.m41 + dx}px, ${matrix.m42 + dy}px)`;
+    moveTile(tile, dx, dy);
 }
 
 const destCell = (tile) => {
@@ -318,19 +232,13 @@ const destCell = (tile) => {
 }
 
 const endMove = () => {
-
+        
     let tile = document.querySelector('.move');
 
     let i = destCell(tile);
 
     tile.dataset.pos = i;
 
-    returnTile(tile);
-}
-
-const returnTile = () => {
-        
-    let tile = document.querySelector('.move');
     let pos = Number(tile.dataset.pos);
     
     cell = document.querySelectorAll('.cell')[pos];
@@ -346,9 +254,9 @@ const returnTile = () => {
     tile.removeEventListener('touchmove', touchMove);
     document.removeEventListener('mousemove', mouseMove);
 
-    tile.removeEventListener('touchend', returnTile);
-    tile.removeEventListener('touchcancel', returnTile);
-    document.removeEventListener('mouseup', returnTile);
+    tile.removeEventListener('touchend', endMove);
+    tile.removeEventListener('touchcancel', endMove);
+    document.removeEventListener('mouseup', endMove);
 
     let offsetLeft = rectTile.left - rectCell.left;
     let offsetTop = rectTile.top - rectCell.top;
@@ -359,7 +267,7 @@ const returnTile = () => {
 
         let tile = e.currentTarget;
 
-        tile.classList.remove('return', 'move');
+        tile.classList.remove('return', 'move', 'vert', 'horiz');
         
     }, {once: true});
 
@@ -373,7 +281,7 @@ const enableTouch = () => {
 
     tiles.forEach(piece => piece.addEventListener(event, startMove));
 
-    window.addEventListener('orientationchange', returnTile);
+    window.addEventListener('orientationchange', endMove);
 }
 
 const disableTouch = () => {
@@ -383,7 +291,7 @@ const disableTouch = () => {
 
     tiles.forEach(piece => piece.removeEventListener(event, startMove));
 
-    window.addEventListener('orientationchange', returnPiece);
+    window.addEventListener('orientationchange', endMove);
 }
 
 const disableTapZoom = () => {
@@ -400,12 +308,6 @@ const init = () => {
     setBoardSize();
     fillBoard();
     enableTouch();
-
-    // let cell = document.querySelectorAll('.cell')[0];
-
-    // console.log(cell.offsetWidth);
-
-    // sizes();
 }
 
 window.onload = () => document.fonts.ready.then(init());

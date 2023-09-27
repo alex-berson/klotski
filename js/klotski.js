@@ -19,7 +19,6 @@ const fillBoard = () => {
     // let places = [1,0,3,8,11,13,9,10,16,19];
     // let places = [1,0,13,8,14,9,3,7,16,19];
 
-
     let cells = document.querySelectorAll('.cell');
     let tiles = document.querySelectorAll('.tile');
 
@@ -795,7 +794,7 @@ const endMove = (e) => {
             
         let event = new Event('transitionend');
         let style = window.getComputedStyle(tile);
-        let matrix = new WebKitCSSMatrix(style.transform);
+        let matrix = new DOMMatrix(style.transform);
         let rectTile = tile.getBoundingClientRect();
         let rectCell = cell.getBoundingClientRect();
 
@@ -868,12 +867,236 @@ const endMove = (e) => {
 //     if (offsetLeft == 0 && offsetTop == 0) tile.dispatchEvent(event);
 // }
 
+// const reset = () => {
+
+//     let n = 10;
+
+//     disableReset();
+
+//     let tiles = document.querySelectorAll('.tile');
+
+//     tiles.forEach(tile => {
+        
+//         tile.classList.add('disappear');
+
+//         tile.addEventListener('transitionend', e => {
+
+//             n--;
+    
+//             let tile = e.currentTarget;
+    
+//             tile.removeAttribute('style');
+    
+//             if (n == 0) {
+
+//                 let n = 10;
+                
+//                 fillBoard();
+
+//                 tiles.forEach(tile =>  {
+                    
+//                     tile.classList.remove('disappear')
+                
+//                     tile.addEventListener('transitionend', e => {
+
+//                         n--;
+                
+//                         if (n == 0) enableReset();
+    
+//                     }, {once: true});
+                
+//                 });
+//             }
+//         }, {once: true});
+//     });
+// }
+
+// const reset = () => {
+
+//     let shapes = [[0],[1,2,3,4],[5],[6,7,8,9]];
+//     let positions = [[1],[0,3,8,11],[9],[13,14,16,19]];
+//     let tiles = document.querySelectorAll('.tile');
+
+//     // let event = new Event('touchend');
+//     // disableReset();
+
+//     if ([...tiles].some(tile => tile.classList.contains('move'))) return;
+
+//     for (let tile of tiles) {
+
+//         let n = Number(tile.id.substring(1));
+//         let pos = Number(tile.dataset.pos); 
+
+//         // if (tile.classList.contains('move')) tile.dispatchEvent(event);
+
+//         for (let [i, shape] of shapes.entries()) {
+
+//             if (shape.includes(n)) {
+
+//                 if (positions[i].includes(pos)) break;
+
+//                 let freePositions = positions[i].slice();
+
+//                 for (let j of shape) {
+
+//                     let pos2 = Number(tiles[j].dataset.pos);
+
+//                     if (positions[i].includes(pos2)) {
+//                         freePositions = freePositions.filter(val => val != pos2);
+//                     }
+//                 }
+
+//                 let newPos;
+//                 let minDist = Infinity;
+
+//                 for (let freePos of freePositions) {
+                    
+//                     let dist = manhattanDist(pos, freePos);
+
+//                     if (dist < minDist) [newPos, minDist] = [freePos, dist];
+//                 }
+
+//                 let cell = document.querySelectorAll('.cell')[newPos];                    
+//                 let style = window.getComputedStyle(tile);
+//                 let matrix = new DOMMatrix(style.transform);
+//                 let rectTile = tile.getBoundingClientRect();
+//                 let rectCell = cell.getBoundingClientRect();
+//                 let offsetLeft = rectTile.left - rectCell.left;
+//                 let offsetTop = rectTile.top - rectCell.top;
+
+//                 tile.dataset.pos = newPos;
+//                 tile.classList.add('return');        
+//                 tile.style.transform = `translate(${Math.round(matrix.m41 - offsetLeft)}px, ${Math.round(matrix.m42 - offsetTop)}px)`;
+        
+//                 tile.addEventListener('transitionend', e => {
+        
+//                     let tile = e.currentTarget;
+        
+//                     tile.classList.remove('return');        
+                    
+//                 }, {once: true});
+
+//                 break;
+//             }
+//         }
+//     }
+// }
+
+const manhattanDistAdj = (pos, newPos) => {
+
+    let r1 = Math.floor(pos / 4)
+    let c1 = pos % 4;
+    let r2 = Math.floor(newPos / 4)
+    let c2 = newPos % 4;
+
+    // return Math.abs(r2 - r1) + Math.abs(c2 - c1);
+
+    return Math.abs(r2 - r1) + Math.abs(c2 - c1) + 0.01 * Math.min(Math.abs(r2 - r1), Math.abs(c2 - c1));
+}
+
+const permutations = (arr) => {
+
+    if (arr.length == 0) return [[]];
+
+    return arr.flatMap((e, i) => permutations([...arr.slice(0, i), ...arr.slice(i + 1)]).map(p => [e, ...p]));
+}
+
+const totalDistance = (starts, ends) => {
+
+    let total = 0;
+
+    for (let i = 0; i < starts.length; i++) {
+        total += manhattanDistAdj(starts[i], ends[i]);
+    }
+
+    return total;
+}
+
+const reset = () => {
+
+    let shapes = [[0],[1,2,3,4],[5],[6,7,8,9]];
+    let positions = [[1],[0,3,8,11],[9],[13,14,16,19]];
+    let tiles = document.querySelectorAll('.tile');
+    let cells = document.querySelectorAll('.cell')
+
+    if ([...tiles].some(tile => tile.classList.contains('move'))) return;
+
+    for (let [i, tileNums] of shapes.entries()) {
+
+        let startPositions = [];
+
+        for (let num of tileNums) {
+            startPositions.push(Number(tiles[num].dataset.pos)); 
+        }
+
+        let allEndPositions = permutations(positions[i]);
+        let minDistance = Infinity;
+        let minN;
+
+        for (let [n, endPositions] of allEndPositions.entries()) {
+
+            let total = totalDistance(startPositions, endPositions);
+
+            if (total < minDistance) [minDistance, minN] = [total, n];
+
+            // console.log(total, minN);
+        }
+
+        // console.log(startPositions);
+        // console.log(allEndPositions[minN]);
+
+        let endPositions = allEndPositions[minN];
+
+        for (let [n, num] of tileNums.entries()) {
+
+            if (startPositions[n] == endPositions[n]) continue;
+
+            let cell = cells[endPositions[n]];  
+            let tile = tiles[num];
+            let style = window.getComputedStyle(tile);
+            let matrix = new DOMMatrix(style.transform);
+            let rectTile = tile.getBoundingClientRect();
+            let rectCell = cell.getBoundingClientRect();
+            let offsetLeft = rectTile.left - rectCell.left;
+            let offsetTop = rectTile.top - rectCell.top;
+
+            tile.dataset.pos = endPositions[n];
+            tile.classList.add('return');        
+            tile.style.transform = `translate(${Math.round(matrix.m41 - offsetLeft)}px, ${Math.round(matrix.m42 - offsetTop)}px)`;
+    
+            tile.addEventListener('transitionend', e => {
+    
+                let tile = e.currentTarget;
+    
+                tile.classList.remove('return');        
+                
+            }, {once: true});
+        }
+    }
+}
+
+const enableReset = () => {
+
+    let event = touchScreen() ? 'touchstart' : 'mousedown';
+    let button = document.querySelector('.reset');
+
+    button.addEventListener(event, reset);
+}
+
+const disableReset = () => {
+
+    let event = touchScreen() ? 'touchstart' : 'mousedown';
+    let button = document.querySelector('.reset');
+
+    button.removeEventListener(event, reset);
+}
+
 const enableTouch = () => {
 
     let event = touchScreen() ? 'touchstart' : 'mousedown';
     let tiles = document.querySelectorAll('.tile');
 
-    tiles.forEach(piece => piece.addEventListener(event, startMove));
+    tiles.forEach(tile => tile.addEventListener(event, startMove));
 
     window.addEventListener('orientationchange', endMove);
 }
@@ -883,10 +1106,11 @@ const disableTouch = () => {
     let event = touchScreen() ? 'touchstart' : 'mousedown';
     let tiles = document.querySelectorAll('.tile');
 
-    tiles.forEach(piece => piece.removeEventListener(event, startMove));
+    tiles.forEach(tile => tile.removeEventListener(event, startMove));
 
-    window.addEventListener('orientationchange', endMove);
+    // window.addEventListener('orientationchange', endMove);
 }
+
 
 const disableTapZoom = () => {
 
@@ -902,6 +1126,7 @@ const init = () => {
     setBoardSize();
     fillBoard();
     showBoard();
+    enableReset();
     enableTouch();
 
     // endMove();

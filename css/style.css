@@ -1,4 +1,4 @@
-@font-face {
+/* @font-face {
     font-family: 'Roboto';
     src: url(../fonts/roboto-regular-webfont.woff);
 }
@@ -7,7 +7,7 @@
     font-family: 'Roboto';
     src: url(../fonts/roboto-bold-webfont.woff);
     font-weight: bold;
-}
+} */
 
 /* @font-face {
     font-family: 'Roboto Slab';
@@ -65,11 +65,28 @@ body:hover {
 }
 
 h1 {
+    position: relative;
     text-align: center;
-    font-size: calc(var(--board-size) / 3.0);
-    margin-top: -10px;
+    font-size: calc(var(--board-size) / 2.95);
+    margin-top: -20px;
     margin-bottom: 8px;
 } 
+
+.reset {
+    display: inline-grid;
+    place-items: center;
+    cursor: pointer;
+    width: calc(var(--board-size) / 5.1);
+    height: calc(var(--board-size) / 5.1);
+    background-color: var(--yellow);
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+img {
+    width: calc(var(--board-size) / 8);
+    height: calc(var(--board-size) / 8);
+}
 
 span:nth-child(1) {
     color: var(--red);
@@ -141,13 +158,13 @@ span:nth-child(7) {
     align-content: center;
     cursor: pointer;
     border-radius: 7px;
+    /* transition: opacity 0.2s ease-in-out; */
 }
 
 #t0 {
     width: calc(var(--board-size) / 4 + var(--board-size) / 4 - var(--gap));
     height: calc(var(--board-size) / 4 + var(--board-size) / 4 - var(--gap));
     background-color: var(--red);
-    /* font-size: 5em; */
 }
 
 #t1,#t2,#t3,#t4 {
@@ -168,17 +185,13 @@ span:nth-child(7) {
     background-color: var(--yellow);
 }
 
-/* #t5 {
-    display: none;
-} */
-
 .return {
     transition: all 0.1s linear;
 }
 
-/* .move {
-    z-index: 100;
-} */
+.disappear {
+    opacity: 0;
+}
 
 #designed {
     position: relative;
@@ -208,8 +221,18 @@ span:nth-child(7) {
     }
 
     h1 {
-        font-size: 136px;
+        font-size: 138px;
         line-height: 110%;    
+    }
+
+    .reset { 
+        width: 80px;
+        height: 80px;
+    }
+    
+    img {
+        width: 50px;
+        height: 50px;
     }
 
     .board {
@@ -231,7 +254,6 @@ span:nth-child(7) {
     }
 
     #t0 {
-        /* font-size: 150px; */
         width: calc(var(--board-size-big) / 4 + var(--board-size-big) / 4 - var(--gap));
         height: calc(var(--board-size-big) / 4 + var(--board-size-big) / 4 - var(--gap));
     }

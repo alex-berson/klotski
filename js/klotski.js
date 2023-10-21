@@ -184,7 +184,7 @@ const fillBoard = () => {
 //     return [tile1];
 // }
 
-const checkLeft = (tile1, tiles, rectBoard, borderWidth) => {
+const checkLeft = (tile, tiles, rectBoard, borderWidth) => {
 
     // console.log(tile1.id);
 
@@ -223,13 +223,20 @@ const checkLeft = (tile1, tiles, rectBoard, borderWidth) => {
         }
     }
 
-    traverseLeft(tile1);
+    traverseLeft(tile);
+
+    // console.log(tilesMove);
 
     return moveTiles.includes(null) ? null : moveTiles;
+
+    // return traverseLeft(tile);
+    // console.log(moveTiles.length == 0 ? null : moveTiles);
+
+    // return moveTiles.length == 0 ? null : moveTiles;
 }
 
 
-const checkRight = (tile1, tiles, rectBoard, borderWidth) => {
+const checkRight = (tile, tiles, rectBoard, borderWidth) => {
 
     let moveTiles = [];
 
@@ -263,13 +270,13 @@ const checkRight = (tile1, tiles, rectBoard, borderWidth) => {
         }
     }
 
-    traverseRight(tile1);
+    traverseRight(tile);
 
 
     return moveTiles.includes(null) ? null : moveTiles;
 }
 
-const checkUp = (tile1, tiles, rectBoard, borderWidth) => {
+const checkUp = (tile, tiles, rectBoard, borderWidth) => {
 
     let moveTiles = [];
 
@@ -303,12 +310,12 @@ const checkUp = (tile1, tiles, rectBoard, borderWidth) => {
         }
     }
 
-    traverseUp(tile1);
+    traverseUp(tile);
 
     return moveTiles.includes(null) ? null : moveTiles;
 }
 
-const checkDown = (tile1, tiles, rectBoard, borderWidth) => {
+const checkDown = (tile, tiles, rectBoard, borderWidth) => {
 
     let moveTiles = [];
 
@@ -343,13 +350,14 @@ const checkDown = (tile1, tiles, rectBoard, borderWidth) => {
         }
     }
 
-    traverseDown(tile1);
+    traverseDown(tile);
 
-    return moveTiles.includes(null) ? null : [...new Set(moveTiles)];
+    // return moveTiles.includes(null) ? null : [...new Set(moveTiles)]; 
+
+    return moveTiles.includes(null) ? null : moveTiles;
 }
 
-
-const checkMove = (tile1) => {
+const checkMove = (tile) => {
 
     let board = document.querySelector('.board');
     let tiles = document.querySelectorAll('.tile');
@@ -360,10 +368,10 @@ const checkMove = (tile1) => {
 
     // left = [tile1, tiles[8]];
 
-    let left = checkLeft(tile1, tiles, rectBoard, borderWidth);
-    let right = checkRight(tile1, tiles, rectBoard, borderWidth);
-    let up = checkUp(tile1, tiles, rectBoard, borderWidth);
-    let down = checkDown(tile1, tiles, rectBoard, borderWidth);
+    let left = checkLeft(tile, tiles, rectBoard, borderWidth);
+    let right = checkRight(tile, tiles, rectBoard, borderWidth);
+    let up = checkUp(tile, tiles, rectBoard, borderWidth);
+    let down = checkDown(tile, tiles, rectBoard, borderWidth);
 
     // console.log(left);
     // console.log(right);
@@ -410,18 +418,74 @@ const startMove = (e) => {
 
 const moveTile = (tile, dx, dy) => {
 
+    // console.log('MOVE', dx, dy);
+
     // let style = window.getComputedStyle(tile);
     // let matrix = new WebKitCSSMatrix(style.transform);
     let [left, right, up, down] = checkMove(tile);
-    let tiles = [...document.querySelectorAll('.move')];
+    let tiles = [...document.querySelectorAll('.move:not(.selected')];
     let cells = document.querySelectorAll('.cell');
+
+    // console.log(dx, dy);
+
+    let vertical = Math.abs(dx) < Math.abs(dy);
+    let horizontal = Math.abs(dx) > Math.abs(dy);
+
+
+    // let removed = false;
+
+    // vertical = true;
+    // horizontal = true;
+
 
     if (dx < 0 && left == null) dx = 0;
     if (dx > 0 && right == null) dx = 0;
     if (dy < 0 && up == null) dy = 0;
     if (dy > 0 && down == null) dy = 0;
 
-    if (dx == 0 && dy > 0) {
+
+    // if (left.length <= 1 && right.length <= 1 && up.lastIndexOf <= 1 && down.length <= 1 && tiles.length != 0) {
+
+    if ((left == null || left.length == 1) &&
+        (right == null || right.length == 1) &&
+        (up == null || up.length == 1) &&
+        (down == null || down.length == 1) && tiles.length != 0) {
+
+            endMove();
+
+            tiles.forEach(tile => tile.classList.remove('move'));
+
+            tiles = [];
+            
+            // for (let tile of tiles) {
+            //     if (!tile.classList.contains('selected')) {
+
+            //         endMove();
+
+            //         tile.classList.remove('move');
+
+            //         // let rectTile = tile.getBoundingClientRect();
+            //         // let rectCell = cells[19].getBoundingClientRect();
+
+            //         // console.log(rectTile.bottom, rectCell.bottom);
+            //     }
+            // }
+    }
+
+    // if (left == null) {
+
+        // for (let tile of tiles) {
+        //     if (!tile.classList.contains('selected')) tile.classList.remove('move');
+        // }
+        
+    // }
+
+    // console.log(dx, dy);
+
+
+    // if (Math.abs(dy) > Math.abs(dx) && down && dy > 0) {
+
+    if (dx == 0 && dy > 0 && vertical) {
 
         let matrix = [];
 
@@ -440,7 +504,18 @@ const moveTile = (tile, dx, dy) => {
 
             let [left, right, up, down] = checkMove(tile);
 
-            if (down == null || tile.classList.contains('left') || tile.classList.contains('right')) break;
+            // if (down == null || tile.classList.contains('left') || tile.classList.contains('right')) break;
+
+            if (down == null) break;
+            // if (down == null) {
+
+            //     // for (let tile of tiles) {
+            //     //     if (!tile.classList.contains('selected')) tile.classList.remove('move');
+            //     // }
+                
+            //     break;
+            // }
+
 
             if (length < down.length) break;
 
@@ -448,6 +523,7 @@ const moveTile = (tile, dx, dy) => {
                 tile.classList.add('move');
             }
 
+            // let tiles = [...document.querySelectorAll('.move')];
             let downPlus = [...new Set(down.concat(tiles))];
 
             // if (down == null || tile.classList.contains('horiz')) break;
@@ -490,7 +566,9 @@ const moveTile = (tile, dx, dy) => {
         }
     }
 
-    if (dx == 0 && dy < 0) {
+    // if (Math.abs(dy) > Math.abs(dx) && up && dy < 0) {
+
+    if (dx == 0 && dy < 0 && vertical) {
 
         let matrix = [];
 
@@ -508,7 +586,18 @@ const moveTile = (tile, dx, dy) => {
 
             let [left, right, up, down] = checkMove(tile);
 
-            if (up == null || tile.classList.contains('left') || tile.classList.contains('right')) break;
+            // if (up == null || tile.classList.contains('left') || tile.classList.contains('right')) break;
+
+            if (up == null) break;
+
+            // if (up == null) {
+
+            //     // for (let tile of tiles) {
+            //     //     if (!tile.classList.contains('selected')) tile.classList.remove('move');
+            //     // }
+                
+            //     break;
+            // }
 
             if (length < up.length) break;
 
@@ -517,6 +606,7 @@ const moveTile = (tile, dx, dy) => {
                 tile.classList.add('move');
             }
 
+            // let tiles = [...document.querySelectorAll('.move')];
             let upPlus = [...new Set(up.concat(tiles))];
 
             // if (up == null|| tile.classList.contains('horiz')) break;
@@ -558,7 +648,9 @@ const moveTile = (tile, dx, dy) => {
         }
     }
 
-    if (dy == 0 && dx > 0) {
+    // if (Math.abs(dx) > Math.abs(dy) && right && dx > 0) {
+
+    if (dy == 0 && dx > 0 && horizontal) {
 
         let matrix = [];
 
@@ -576,7 +668,18 @@ const moveTile = (tile, dx, dy) => {
 
             let [left, right, up, down] = checkMove(tile);
 
-            if (right == null || tile.classList.contains('up') || tile.classList.contains('down')) break;
+            // if (right == null || tile.classList.contains('up') || tile.classList.contains('down')) break;
+
+            if (right == null) break;
+
+            // if (right == null) {
+
+            //     // for (let tile of tiles) {
+            //     //     if (!tile.classList.contains('selected')) tile.classList.remove('move');
+            //     // }
+                
+            //     break;
+            // }
 
             if (length < right.length) break;
 
@@ -585,6 +688,7 @@ const moveTile = (tile, dx, dy) => {
                 tile.classList.add('move');
             }
 
+            // let tiles = [...document.querySelectorAll('.move')];
             let rightPlus = [...new Set(right.concat(tiles))];
 
             // console.log(right);
@@ -633,7 +737,9 @@ const moveTile = (tile, dx, dy) => {
         }
     }
 
-    if (dy == 0 && dx < 0) {
+    // if (Math.abs(dx) > Math.abs(dy) && left && dx < 0) {
+
+    if (dy == 0 && dx < 0 && horizontal) {
 
         let matrix = [];
 
@@ -655,7 +761,20 @@ const moveTile = (tile, dx, dy) => {
 
             // console.log(left.length);
 
-            if (left == null || tile.classList.contains('up') || tile.classList.contains('down')) break;
+            // if (left == null || tile.classList.contains('up') || tile.classList.contains('down'))break;
+
+            if (left == null) break;
+
+            // if (left == null) {
+
+            //     // for (let tile of tiles) {
+            //     //     if (!tile.classList.contains('selected')) tile.classList.remove('move');
+            //     // }
+                
+            //     break;
+            // }
+
+            // console.log(length, left.length);
 
             if (length < left.length) break;
 
@@ -665,6 +784,7 @@ const moveTile = (tile, dx, dy) => {
 
             // tiles = [...document.querySelectorAll('.move')];
 
+            // let tiles = [...document.querySelectorAll('.move')];
             let leftPlus = [...new Set(tiles.concat(left))];
 
             // console.log(left);
@@ -717,6 +837,8 @@ const moveTile = (tile, dx, dy) => {
                 // }
 
                 // console.log(matrix)
+
+                // console.log('LEFT');
 
                 tile.style.transform = `translate(${matrix[i].m41 + x}px, ${matrix[i].m42 + dy}px)`;
             }
@@ -776,7 +898,8 @@ const endMove = (e) => {
         
     // let tiles = document.querySelectorAll('.move');
 
-    let tiles = e == undefined ? document.querySelectorAll('.move:not(.selected)') : document.querySelectorAll('.move');
+    let tiles = e == undefined ? document.querySelectorAll('.move:not(.selected)') 
+                               : document.querySelectorAll('.move');
 
     // console.log(tiles);
 
@@ -1129,7 +1252,9 @@ const init = () => {
     enableReset();
     enableTouch();
 
+    setTimeout(solve,100);
+
     // endMove();
 }
 
-window.onload = () => document.fonts.ready.then(init());
+window.onload = () => document.fonts.ready.then(init);

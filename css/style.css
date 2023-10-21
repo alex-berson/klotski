@@ -116,8 +116,6 @@ span:nth-child(7) {
     color: var(--yellow);
 }
 
-
-
 .board {
     display: grid;
     position: relative;
@@ -158,6 +156,9 @@ span:nth-child(7) {
     align-content: center;
     cursor: pointer;
     border-radius: 7px;
+    /* color: white; */
+    /* font-size: calc(var(--board-size) / 2.4); */
+
     /* transition: opacity 0.2s ease-in-out; */
 }
 
@@ -189,9 +190,9 @@ span:nth-child(7) {
     transition: all 0.1s linear;
 }
 
-.disappear {
+/* .disappear {
     opacity: 0;
-}
+} */
 
 #designed {
     position: relative;
@@ -254,6 +255,7 @@ span:nth-child(7) {
     }
 
     #t0 {
+        /* font-size: calc(var(--board-size-big) / 2.3); */
         width: calc(var(--board-size-big) / 4 + var(--board-size-big) / 4 - var(--gap));
         height: calc(var(--board-size-big) / 4 + var(--board-size-big) / 4 - var(--gap));
     }

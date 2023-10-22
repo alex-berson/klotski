@@ -1,3 +1,6 @@
+let timer;
+let timer2; //
+
 const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap'));
 
 const showBoard = () => document.body.style.opacity = 1;
@@ -382,6 +385,8 @@ const checkMove = (tile) => {
 }
 
 const startMove = (e) => {
+
+    if (aiMode()) return;
 
     console.clear();
 
@@ -1142,6 +1147,8 @@ const reset = () => {
     let tiles = document.querySelectorAll('.tile');
     let cells = document.querySelectorAll('.cell')
 
+    if (aiMode()) return;
+
     if ([...tiles].some(tile => tile.classList.contains('move'))) return;
 
     for (let [i, tileNums] of shapes.entries()) {
@@ -1234,13 +1241,83 @@ const disableTouch = () => {
     // window.addEventListener('orientationchange', endMove);
 }
 
-
 const disableTapZoom = () => {
 
     const preventDefault = (e) => e.preventDefault();
     const event = touchScreen() ? 'touchstart' : 'mousedown';
 
     document.body.addEventListener(event, preventDefault, {passive: false});
+}
+
+const aiPlay = ({init = true} = {}) => {
+
+    const makeMove = () => {
+
+        let tiles = document.querySelectorAll('.tile');
+        let cells = document.querySelectorAll('.cell');
+
+        if (moves.length == 0) console.timeEnd('timer2'); //
+
+        if (document.hidden) return;
+        if (moves.length == 0) return;
+
+        let [num, from, to] = moves.shift();
+
+        console.log(num, from, to);
+
+        let tile = tiles[num];
+        let style = window.getComputedStyle(tile);
+        let matrix = new DOMMatrix(style.transform);
+        let rectTile = tile.getBoundingClientRect();
+        let rectCell = cells[to].getBoundingClientRect();
+
+        tile.dataset.pos = to;
+        tile.classList.add('ai-move');
+
+        tile.addEventListener('transitionend', e => {
+
+            let tile = e.currentTarget;
+    
+            tile.classList.remove('ai-move');
+    
+        }, {once: true});
+    
+        tile.style.transform = `translate(${Math.round(matrix.m41 - (rectTile.left - rectCell.left))}px, ${Math.round(matrix.m42 - (rectTile.top - rectCell.top))}px)`;
+
+        timer = setTimeout(() => makeMove(), 300);
+    }
+
+    if (init) {
+        window.addEventListener('visibilitychange', () => {
+            document.hidden ? clearTimeout(timer) : makeMove();
+        });
+    }
+
+    console.time('timer2'); //
+
+    let t0 = performance.now();
+
+    let moves = bfs();
+
+    let t1 = performance.now();
+
+    console.log(`Finished in ${(t1 - t0) / 1000} seconds`);
+    console.log(moves.length);
+
+    // alert(`Finished in ${(t1 - t0) / 1000} seconds`);
+
+    console.log(moves.slice());
+
+    setTimeout(makeMove, 1500 - (t1 - t0));
+}
+
+const aiMode = () => {
+
+    let queryString = window.location.search;
+    let urlParams = new URLSearchParams(queryString);
+    let mode = urlParams.get('mode');
+    
+    return mode == 'ai';
 }
 
 const init = () => {
@@ -1252,9 +1329,13 @@ const init = () => {
     enableReset();
     enableTouch();
 
-    setTimeout(solve,100);
+    // setTimeout(solve,100);
 
     // endMove();
+
+    if (aiMode()) setTimeout(aiPlay, 100);
+
+    // aiPlay();
 }
 
 window.onload = () => document.fonts.ready.then(init);

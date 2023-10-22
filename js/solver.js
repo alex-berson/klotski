@@ -1,5 +1,5 @@
-const height = 5;
 const width = 4;
+const height = 5;
 
 const initBoard = () =>  [1,0,0,2,1,0,0,2,3,5,5,4,3,6,7,4,8,-1,-1,9];
 
@@ -100,23 +100,42 @@ const getNextBoards = (board) => {
         }
     }
 
-    // return newBoards;
-
     return shuffle(newBoards);
 }
 
-const solutionlist = (board) => {
+const getMove = (board1, board2) => {
 
-    let boards = [];
+    for (let i = 0; i < board1.length; i++) {
+
+        if (board1[i] == board2[i]) continue;
+
+        if (board1[i] == -1) {
+            
+            let j = board1.indexOf(board2[i]);
+
+            return [board2[i], j, i];
+
+        } else {
+
+            let j = board2.indexOf(board1[i]);
+
+            return [board1[i], i, j];
+        }
+    }
+}
+
+const solution = (board) => {
+
+    let moves = [];
 
     while (board != undefined) {
 
-        boards.push(board);
+        if (board.prev != undefined) moves.push(getMove(board.prev, board));
 
         board = board.prev;
     }
 
-    return boards.reverse();
+    return moves.reverse();
 }
 
 const bfs = () => {
@@ -138,22 +157,10 @@ const bfs = () => {
             nextBoard.prev = currentBoard;
 
             if (enqueued.has(hash(nextBoard))) continue;
-            if (solved(nextBoard)) return nextBoard;
+            if (solved(nextBoard)) return solution(nextBoard);
 
             queue.push(nextBoard);
             enqueued.add(hash(nextBoard));
         }
     }
-}
-
-const solve = () => {
-  
-    let t0 = performance.now();
-    let solution = bfs();
-    let t1 = performance.now();
-
-    console.log(`Finished in ${(t1 - t0) / 1000} seconds`);
-    console.log(solutionlist(solution).length);
-
-    alert(`Finished in ${(t1 - t0) / 1000} seconds`);
 }

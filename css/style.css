@@ -190,6 +190,10 @@ span:nth-child(7) {
     transition: all 0.1s linear;
 }
 
+.ai-move {
+    transition: all 0.15s ease-in-out;
+}
+
 /* .disappear {
     opacity: 0;
 } */

@@ -7,7 +7,7 @@ const squareToCoords = (square) => [Math.floor(square / width), square % width];
 
 const coordsToSquare = (r, c) => r * width + c;
 
-const solved = (board) => board[17] == 0 && board[18] == 0;
+const puzzleSolved = (board) => board[17] == 0 && board[18] == 0;
 
 const shuffle = (array) => {
 
@@ -21,7 +21,7 @@ const shuffle = (array) => {
     return array;
 }
 
-const hash = (board) => {
+const getHash = (board) => {
 
     let str = '';
     let table = ['S','v','v','v','v','h','s','s','s','s'];
@@ -34,6 +34,23 @@ const hash = (board) => {
     }
 
     return str;
+
+    // let values = new Map([
+    //     [-1, ' '], 
+    //     [0, 'S'], 
+    //     [1, 't'], 
+    //     [2, 't'], 
+    //     [3, 't'], 
+    //     [4, 't'], 
+    //     [5, 'w'], 
+    //     [6, 's'], 
+    //     [7, 's'], 
+    //     [8, 's'], 
+    //     [9, 's']
+    //   ]);
+
+    // return board.map(s => values.get(s)).join('');
+
 }
 
 const getBlocks = (board) => {
@@ -124,7 +141,7 @@ const getMove = (board1, board2) => {
     }
 }
 
-const solution = (board) => {
+const getSolution = (board) => {
 
     let moves = [];
 
@@ -138,14 +155,14 @@ const solution = (board) => {
     return moves.reverse();
 }
 
-const bfs = () => {
+const breadthFirstSearch = () => {
 
     let queue = [];
     let enqueued = new Set();
     let board = initBoard();
 
     queue.push(board);
-    enqueued.add(hash(board));
+    enqueued.add(getHash(board));
 
     while (queue.length > 0) {
 
@@ -156,11 +173,13 @@ const bfs = () => {
 
             nextBoard.prev = currentBoard;
 
-            if (enqueued.has(hash(nextBoard))) continue;
-            if (solved(nextBoard)) return solution(nextBoard);
+            if (enqueued.has(getHash(nextBoard))) continue;
+            if (puzzleSolved(nextBoard)) return getSolution(nextBoard);
 
             queue.push(nextBoard);
-            enqueued.add(hash(nextBoard));
+            enqueued.add(getHash(nextBoard));
         }
     }
 }
+
+postMessage(breadthFirstSearch());

@@ -1,5 +1,6 @@
 let timer;
 let timer2; //
+let moves;
 
 const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap'));
 
@@ -21,6 +22,9 @@ const fillBoard = () => {
     let places = [1,0,3,8,11,9,13,14,16,19];
     // let places = [1,0,3,8,11,13,9,10,16,19];
     // let places = [1,0,13,8,14,9,3,7,16,19];
+
+    // let places = [14,0,1,2,3,8,10,11,12,16];
+
 
     let cells = document.querySelectorAll('.cell');
     let tiles = document.querySelectorAll('.tile');
@@ -948,6 +952,7 @@ const endMove = (e) => {
             // tile.classList.remove('return', 'selected', 'vert', 'horiz');
             tile.classList.remove('return', 'selected', 'move', 'left', 'right', 'up', 'down', 'vert', 'horiz');
 
+            if (win()) slideOut()
             
         }, {once: true});
 
@@ -1147,9 +1152,21 @@ const reset = () => {
     let tiles = document.querySelectorAll('.tile');
     let cells = document.querySelectorAll('.cell')
 
-    if (aiMode()) return;
+    console.log('RESET')
 
-    if ([...tiles].some(tile => tile.classList.contains('move'))) return;
+    // if (aiMode()) {
+        
+    //     clearTimeout(timer);
+    //     setTimeout(aiPlay, 200, {init: false});
+    //     // return;
+    //     setTimeout(enableReset, 1000);
+
+    // } else {
+    //     setTimeout(enableReset, 150);
+
+    // }
+
+    if ([...tiles].some(tile => tile.classList.contains('move') || tile.classList.contains('ai-move'))) return;
 
     for (let [i, tileNums] of shapes.entries()) {
 
@@ -1198,9 +1215,51 @@ const reset = () => {
     
                 let tile = e.currentTarget;
     
-                tile.classList.remove('return');        
+                tile.classList.remove('return');  
+                
+                tile.addEventListener('transitionend', e => {
+    
+                    let tile = e.currentTarget;
+
+                    if (tile.id != 't0') return;
+
+                    console.log('T0')
+        
+                    tile.style.removeProperty('transition');       
+                    
+                }, {once: true});
                 
             }, {once: true});
+        }
+    }
+
+    for (let [i, pos] of positions.flat().entries()) {
+
+        let tile = document.querySelector(`[data-pos='${pos}']`);
+        tile.id = `t${i}`;
+    }
+
+    let bigBlock = tiles[0];
+
+    if (bigBlock.classList.contains('invisible')) {
+
+        bigBlock.style.transition = 'opacity 0.2s ease-in-out';
+        bigBlock.classList.remove('invisible');
+
+        bigBlock.addEventListener('transitionend', e => {
+    
+            let tile = e.currentTarget;
+
+            console.log('T0')
+
+            tile.style.removeProperty('transition');       
+            
+        }, {once: true});
+
+
+        if (aiMode()) {
+            disableReset();    
+            aiPlay();
         }
     }
 }
@@ -1210,6 +1269,7 @@ const enableReset = () => {
     let event = touchScreen() ? 'touchstart' : 'mousedown';
     let button = document.querySelector('.reset');
 
+    button.classList.add('enabled');
     button.addEventListener(event, reset);
 }
 
@@ -1218,6 +1278,7 @@ const disableReset = () => {
     let event = touchScreen() ? 'touchstart' : 'mousedown';
     let button = document.querySelector('.reset');
 
+    button.classList.remove('enabled');
     button.removeEventListener(event, reset);
 }
 
@@ -1249,23 +1310,79 @@ const disableTapZoom = () => {
     document.body.addEventListener(event, preventDefault, {passive: false});
 }
 
+const slideOut = () => {
+
+    let bigBlock = document.querySelector('#t0');
+    let cells = document.querySelectorAll('.cell');
+
+    let offset = cells[4].getBoundingClientRect().top - cells[0].getBoundingClientRect().top;
+    let distance = window.innerHeight - bigBlock.getBoundingClientRect().top + 10;
+
+    console.log(bigBlock.getBoundingClientRect().top);
+    console.log(window.innerHeight)
+    console.log(offset);
+
+    let style = window.getComputedStyle(bigBlock);
+    let matrix = new DOMMatrix(style.transform);
+
+    bigBlock.classList.add('ai-move');
+
+    // bigBlock.style.transform = `translateY(${Math.round(matrix.m42 - (distance))}px)`;
+
+    bigBlock.style.transition = `all ${0.15 * distance / offset}s ease-in-out`;
+
+    bigBlock.style.transform = `translate(${Math.round(matrix.m41 - (0))}px, ${Math.round(matrix.m42 - (-distance))}px)`;
+
+    bigBlock.addEventListener('transitionend', e => {
+
+        let tile = e.currentTarget;
+
+        tile.classList.remove('ai-move');
+        tile.style.removeProperty('transition');
+        tile.classList.add('invisible');
+
+        enableReset();
+
+    }, {once: true});
+
+}
+
+const win = () => {
+
+    let bigBlock = document.querySelector('#t0');
+    let pos13 = document.querySelectorAll('.cell')[13];
+
+    let rectTile = bigBlock.getBoundingClientRect();
+    let rectCell = pos13.getBoundingClientRect();
+
+    return rectTile.top == rectCell.top && rectTile.left == rectCell.left;
+}
+
 const aiPlay = ({init = true} = {}) => {
 
     const makeMove = () => {
 
-        let tiles = document.querySelectorAll('.tile');
+        // let tiles = document.querySelectorAll('.tile');
         let cells = document.querySelectorAll('.cell');
+
+        if (win()) {
+            console.log('WIN');
+            slideOut();
+            return;
+        }
 
         if (moves.length == 0) console.timeEnd('timer2'); //
 
         if (document.hidden) return;
         if (moves.length == 0) return;
 
-        let [num, from, to] = moves.shift();
+        let [num, from, to] = aiMoves.shift();
 
         console.log(num, from, to);
 
-        let tile = tiles[num];
+        // let tile = tiles[num];
+        let tile = document.querySelector(`#t${num}`);
+
         let style = window.getComputedStyle(tile);
         let matrix = new DOMMatrix(style.transform);
         let rectTile = tile.getBoundingClientRect();
@@ -1293,22 +1410,65 @@ const aiPlay = ({init = true} = {}) => {
         });
     }
 
+    disableReset();
+
+    // setTimeout(() => {
+
     console.time('timer2'); //
 
-    let t0 = performance.now();
+    let t0 = performance.now(); //
 
-    let moves = bfs();
 
-    let t1 = performance.now();
+        // moves = bfs();
 
-    console.log(`Finished in ${(t1 - t0) / 1000} seconds`);
-    console.log(moves.length);
+        // let t1 = performance.now();
 
-    // alert(`Finished in ${(t1 - t0) / 1000} seconds`);
+        // console.log(`Finished in ${(t1 - t0) / 1000} seconds`);
+        // console.log(moves.length);
 
-    console.log(moves.slice());
+        // alert(`Finished in ${(t1 - t0) / 1000} seconds`);
 
-    setTimeout(makeMove, 1500 - (t1 - t0));
+        // console.log(moves.slice());
+
+        // setTimeout(makeMove, 1000 - (t1 - t0));
+
+    // }, 100);
+
+    let aiMoves;
+    let webWorker;
+    let startTime = Date.now();
+
+    try {
+
+        webWorker = new Worker('./js/solver.js');
+
+    } catch (e) {
+
+        aiMoves = moves;
+
+        setTimeout(makeMove, 1000 - (Date.now() - startTime));
+    }
+    
+
+    webWorker.addEventListener('message', e => {
+
+        console.log("WORKER");
+
+        moves = aiMoves = e.data;
+
+        let t1 = performance.now();
+
+        console.log(`Finished in ${(t1 - t0) / 1000} seconds`);
+        console.log(moves.length);
+
+        // alert(`Finished in ${(t1 - t0) / 1000} seconds`);
+
+        console.log(moves.slice());
+
+        setTimeout(makeMove, 1000 - (Date.now() - startTime));
+
+        webWorker.terminate();
+    });
 }
 
 const aiMode = () => {
@@ -1329,13 +1489,7 @@ const init = () => {
     enableReset();
     enableTouch();
 
-    // setTimeout(solve,100);
-
-    // endMove();
-
-    if (aiMode()) setTimeout(aiPlay, 100);
-
-    // aiPlay();
+    if (aiMode()) aiPlay();
 }
 
-window.onload = () => document.fonts.ready.then(init);
+window.addEventListener('load', () => document.fonts.ready.then(init));

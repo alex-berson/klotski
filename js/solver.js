@@ -155,7 +155,7 @@ const getSolution = (board) => {
     return moves.reverse();
 }
 
-const breadthFirstSearch = () => {
+const bfs = () => {
 
     let queue = [];
     let enqueued = new Set();
@@ -182,4 +182,4 @@ const breadthFirstSearch = () => {
     }
 }
 
-postMessage(breadthFirstSearch());
+postMessage(bfs());

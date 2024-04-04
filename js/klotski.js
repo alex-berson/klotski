@@ -6,12 +6,12 @@ const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue
 
 const showBoard = () => document.body.style.opacity = 1;
 
-const touchScreen = () => matchMedia('(hover: none)').matches;
+const clearStorage = () => localStorage.removeItem('board');
 
 const setBoardSize = () => {
 
     let minSide = screen.height > screen.width ? screen.width : window.innerHeight;
-    let cssBoardSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--board-size'));
+    let cssBoardSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--board-size')) / 100;
     let boardSize = Math.ceil(minSide * cssBoardSize / 4) * 4;
 
     document.documentElement.style.setProperty('--board-size', boardSize + 'px');
@@ -19,7 +19,10 @@ const setBoardSize = () => {
 
 const fillBoard = () => {
 
+    console.log(checkStorage());    
+
     let places = [1,0,3,8,11,9,13,14,16,19];
+
     // let places = [1,0,3,8,11,13,9,10,16,19];
     // let places = [1,0,13,8,14,9,3,7,16,19];
 
@@ -28,6 +31,10 @@ const fillBoard = () => {
 
     let cells = document.querySelectorAll('.cell');
     let tiles = document.querySelectorAll('.tile');
+
+    let savedBoard = checkStorage();
+
+    if (savedBoard != null) places = savedBoard;
 
     for (let [i, n] of places.entries()) {
 
@@ -369,8 +376,10 @@ const checkMove = (tile) => {
     let board = document.querySelector('.board');
     let tiles = document.querySelectorAll('.tile');
     let borderWidth = parseInt(getComputedStyle(board).getPropertyValue('border-width'));
-    // let rectTile1 = tile1.getBoundingClientRect();
     let rectBoard = board.getBoundingClientRect();
+
+    // let rectTile1 = tile1.getBoundingClientRect();
+
     // let left = right = up = down = [tile1];
 
     // left = [tile1, tiles[8]];
@@ -388,19 +397,54 @@ const checkMove = (tile) => {
     return [left, right, up, down];
 }
 
+const fixedPositions = () => {
+
+    let tiles = document.querySelectorAll('.tile');
+    let cells = document.querySelectorAll('.cell');
+
+    outer: for (let tile of tiles) {
+
+        let rectTile = tile.getBoundingClientRect();
+
+        for (let cell of cells) {
+                
+            let rectCell = cell.getBoundingClientRect();
+    
+            if (rectTile.left == rectCell.left && rectTile.top == rectCell.top) {
+                continue outer;
+            }
+        }
+
+        return false;
+    }
+
+    return true;
+}
+
 const startMove = (e) => {
 
     if (aiMode()) return;
 
-    console.clear();
+    console.clear(); //
 
     if (document.querySelector('.selected') != null) return;
 
     let tile = e.currentTarget;
 
+    // if ([...checkMove(tile)].every(direction => direction == null)) return;
+
+    // if (!tile.classList.contains('selected')) {
+    //     if (fixedPositions()) {
+    //         endMove(e);
+    //     } else {
+    //         return;
+    //     }
+    // }    
+
     tile.classList.add('selected', 'move');
 
-    checkMove(tile);
+
+    // checkMove(tile);
 
     if (e.type == 'touchstart') {
 
@@ -435,6 +479,9 @@ const moveTile = (tile, dx, dy) => {
     let tiles = [...document.querySelectorAll('.move:not(.selected')];
     let cells = document.querySelectorAll('.cell');
 
+
+    // let derections = ['left', 'right', 'up', 'down'];
+
     // console.log(dx, dy);
 
     let vertical = Math.abs(dx) < Math.abs(dy);
@@ -460,10 +507,10 @@ const moveTile = (tile, dx, dy) => {
         (up == null || up.length == 1) &&
         (down == null || down.length == 1) && tiles.length != 0) {
 
+            console.log(left, right, 'END MOVE');
+
             endMove();
-
             tiles.forEach(tile => tile.classList.remove('move'));
-
             tiles = [];
             
             // for (let tile of tiles) {
@@ -540,6 +587,12 @@ const moveTile = (tile, dx, dy) => {
 
 
             // tile.classList.add('vert');
+
+            // if (tile.classList.contains('up')) {
+            //     endMove();
+            // }
+
+            tile.classList.remove('down','up','right','left');
             tile.classList.add('down');
 
             for (let [i, tile] of downPlus.entries()) {
@@ -561,7 +614,7 @@ const moveTile = (tile, dx, dy) => {
 
                 if (matrix.length == i) {
                     let style = window.getComputedStyle(tile);
-                    matrix[i] = new WebKitCSSMatrix(style.transform);  
+                    matrix[i] = new DOMMatrix(style.transform);  
                 }
 
 
@@ -623,6 +676,12 @@ const moveTile = (tile, dx, dy) => {
 
 
             // tile.classList.add('vert');
+
+            // if (tile.classList.contains('down')) {
+            //     endMove();
+            // }
+
+            tile.classList.remove('down','up','right','left');
             tile.classList.add('up');
 
             for (let [i, tile] of upPlus.entries()) {
@@ -644,7 +703,7 @@ const moveTile = (tile, dx, dy) => {
 
                 if (matrix.length == i) {
                     let style = window.getComputedStyle(tile);
-                    matrix[i] = new WebKitCSSMatrix(style.transform);  
+                    matrix[i] = new DOMMatrix(style.transform);  
                 }
 
                 // if (length < up.length && i >= length) {
@@ -707,7 +766,19 @@ const moveTile = (tile, dx, dy) => {
             // if (right == null || tile.classList.contains('up') || tile.classList.contains('down')) break;
 
             // tile.classList.add('horiz');
+
+            // if (tile.classList.contains('left')) {
+                // let detach = endMove();
+                // console.log('LEFT');
+                // if (detach) rightPlus = [];
+                // tiles.forEach(tile => tile.classList.remove('move'));
+                // tiles = [];
+            // }
+            
+
+            tile.classList.remove('down','up','right','left');
             tile.classList.add('right');
+
 
             // if (tile.classList.contains('left')) {
             //     tile.classList.remove('left');
@@ -715,6 +786,9 @@ const moveTile = (tile, dx, dy) => {
             // }
 
             for (let [i, tile] of rightPlus.entries()) {
+
+                tile.classList.remove('down','up','right','left')
+                tile.classList.add('right');
 
             // for (let [i, tile] of document.querySelectorAll('.move').entries()) {
 
@@ -733,7 +807,7 @@ const moveTile = (tile, dx, dy) => {
 
                 if (matrix.length == i) {
                     let style = window.getComputedStyle(tile);
-                    matrix[i] = new WebKitCSSMatrix(style.transform);  
+                    matrix[i] = new DOMMatrix(style.transform);  
                 }
 
                 // if (length < right.length && i >= length) {
@@ -805,11 +879,20 @@ const moveTile = (tile, dx, dy) => {
 
             // tile.classList.add('horiz');
 
+            // if (tile.classList.contains('right')) {
+                // let detach = endMove();   
+                // if (detach) leftPlus = [];
+            // }
+
+            tile.classList.remove('down','up','right','left');
             tile.classList.add('left');
 
             // length = length || left.length;
 
             for (let [i, tile] of leftPlus.entries()) {
+
+                // tile.classList.remove('down','up','right','left')
+                // tile.classList.add('left');
 
             // let tiles = document.querySelectorAll('.move');
 
@@ -829,14 +912,14 @@ const moveTile = (tile, dx, dy) => {
 
                 if (rectTile.left == rectCell.left && rectTile.top == rectCell.top) {
                     if (!left.includes(tile)) {
-                        tile.classList.remove('move');
+                        tile.classList.remove('move', 'left');
                         continue;
                     }
                 }
 
                 if (matrix.length == i) {
                     let style = window.getComputedStyle(tile);
-                    matrix[i] = new WebKitCSSMatrix(style.transform);  
+                    matrix[i] = new DOMMatrix(style.transform);  
                 }
 
                 // if (length < left.length && i >= length) {
@@ -921,7 +1004,7 @@ const endMove = (e) => {
 
         tile.dataset.pos = i;
 
-        cell = document.querySelectorAll('.cell')[i];
+        let cell = document.querySelectorAll('.cell')[i];
         tile.classList.add('return');        
             
         let event = new Event('transitionend');
@@ -929,6 +1012,24 @@ const endMove = (e) => {
         let matrix = new DOMMatrix(style.transform);
         let rectTile = tile.getBoundingClientRect();
         let rectCell = cell.getBoundingClientRect();
+
+        // let offsetLeft = rectTile.left - rectCell.left;
+        // let offsetTop = rectTile.top - rectCell.top;
+
+
+        // console.log(e, offsetLeft, offsetTop, [...tile.classList], i);
+
+        
+        // if (!e && tile.classList.contains('left') && offsetLeft < 0) return false;
+        // if (!e && tile.classList.contains('right') && offsetLeft > 0) return false;
+
+        // if (!e && tile.classList.contains('right')) return false;
+
+
+        // if (!e) return
+
+        // tile.dataset.pos = i;
+        // tile.classList.add('return'); 
 
         if (e) {
 
@@ -945,19 +1046,32 @@ const endMove = (e) => {
 
         tile.style.transform = `translate(${Math.round(matrix.m41 - offsetLeft)}px, ${Math.round(matrix.m42 - offsetTop)}px)`;
 
+        // tile.classList.remove('move');
+
         tile.addEventListener('transitionend', e => {
 
             let tile = e.currentTarget;
 
+            saveBoard();
+            
             // tile.classList.remove('return', 'selected', 'vert', 'horiz');
-            tile.classList.remove('return', 'selected', 'move', 'left', 'right', 'up', 'down', 'vert', 'horiz');
+            tile.classList.remove('return', 'selected', 'move', 'left', 'right', 'up', 'down');
 
-            if (win()) slideOut()
+            if (win()) {
+
+                document.body.addEventListener('touchstart', blink);
+                document.body.addEventListener('mousedown', blink);
+
+                clearStorage();
+                slideOut();
+            }
             
         }, {once: true});
 
         if (offsetLeft == 0 && offsetTop == 0) tile.dispatchEvent(event);   
     }
+
+    // return true;
 }
 
 // const endMove = () => {
@@ -1150,7 +1264,9 @@ const reset = () => {
     let shapes = [[0],[1,2,3,4],[5],[6,7,8,9]];
     let positions = [[1],[0,3,8,11],[9],[13,14,16,19]];
     let tiles = document.querySelectorAll('.tile');
-    let cells = document.querySelectorAll('.cell')
+    let cells = document.querySelectorAll('.cell');
+    let arrows = document.querySelector('.arrows');
+    let rotate = false;
 
     console.log('RESET')
 
@@ -1165,6 +1281,13 @@ const reset = () => {
     //     setTimeout(enableReset, 150);
 
     // }
+
+    // if ([...tiles].every((tile, i) => tile.dataset.pos == positions.flat()[i])) {
+    //     console.log('Condition met for all elements');
+    // } else {
+    //     console.log('Condition not met for all elements');
+    // }
+
 
     if ([...tiles].some(tile => tile.classList.contains('move') || tile.classList.contains('ai-move'))) return;
 
@@ -1207,6 +1330,7 @@ const reset = () => {
             let offsetLeft = rectTile.left - rectCell.left;
             let offsetTop = rectTile.top - rectCell.top;
 
+            rotate = true;
             tile.dataset.pos = endPositions[n];
             tile.classList.add('return');        
             tile.style.transform = `translate(${Math.round(matrix.m41 - offsetLeft)}px, ${Math.round(matrix.m42 - offsetTop)}px)`;
@@ -1221,9 +1345,7 @@ const reset = () => {
     
                     let tile = e.currentTarget;
 
-                    if (tile.id != 't0') return;
-
-                    console.log('T0')
+                    // if (tile.id != 't0') return;
         
                     tile.style.removeProperty('transition');       
                     
@@ -1231,6 +1353,21 @@ const reset = () => {
                 
             }, {once: true});
         }
+    }
+
+    if (rotate) {
+
+        console.log('ROTATE');
+
+        arrows.classList.add('rotate');
+
+        arrows.addEventListener('animationend', e => {
+    
+            let arrows = e.currentTarget;
+
+            arrows.classList.remove('rotate');       
+            
+        }, {once: true});
     }
 
     for (let [i, pos] of positions.flat().entries()) {
@@ -1250,12 +1387,12 @@ const reset = () => {
     
             let tile = e.currentTarget;
 
-            console.log('T0')
-
             tile.style.removeProperty('transition');       
             
         }, {once: true});
 
+        document.body.removeEventListener('touchstart', blink);
+        document.body.removeEventListener('mousedown', blink);
 
         if (aiMode()) {
             disableReset();    
@@ -1266,38 +1403,42 @@ const reset = () => {
 
 const enableReset = () => {
 
-    let event = touchScreen() ? 'touchstart' : 'mousedown';
     let button = document.querySelector('.reset');
 
     button.classList.add('enabled');
-    button.addEventListener(event, reset);
+    button.addEventListener('touchstart', reset);
+    button.addEventListener('mousedown', reset);
 }
 
 const disableReset = () => {
 
-    let event = touchScreen() ? 'touchstart' : 'mousedown';
     let button = document.querySelector('.reset');
 
     button.classList.remove('enabled');
-    button.removeEventListener(event, reset);
+    button.removeEventListener('touchstart', reset);
+    button.removeEventListener('mousedown', reset);
 }
 
 const enableTouch = () => {
 
-    let event = touchScreen() ? 'touchstart' : 'mousedown';
     let tiles = document.querySelectorAll('.tile');
 
-    tiles.forEach(tile => tile.addEventListener(event, startMove));
+    tiles.forEach(tile => {
+        tile.addEventListener('touchstart', startMove);
+        tile.addEventListener('mousedown', startMove);
+    });
 
     window.addEventListener('orientationchange', endMove);
 }
 
 const disableTouch = () => {
 
-    let event = touchScreen() ? 'touchstart' : 'mousedown';
     let tiles = document.querySelectorAll('.tile');
 
-    tiles.forEach(tile => tile.removeEventListener(event, startMove));
+    tiles.forEach(tile => {
+        tile.removeEventListener('touchstart', startMove);
+        tile.removeEventListener('mousedown', startMove);
+    });
 
     // window.addEventListener('orientationchange', endMove);
 }
@@ -1305,9 +1446,9 @@ const disableTouch = () => {
 const disableTapZoom = () => {
 
     const preventDefault = (e) => e.preventDefault();
-    const event = touchScreen() ? 'touchstart' : 'mousedown';
 
-    document.body.addEventListener(event, preventDefault, {passive: false});
+    document.body.addEventListener('touchstart', preventDefault, {passive: false});
+    document.body.addEventListener('mousedown', preventDefault, {passive: false});
 }
 
 const slideOut = () => {
@@ -1347,6 +1488,25 @@ const slideOut = () => {
 
 }
 
+const blink = () => {
+
+    console.log('BLINK');
+
+    let resetButton = document.querySelector('.arrows');
+
+    if (resetButton.classList.contains('blink')) return;
+
+    resetButton.classList.add('blink');
+
+    resetButton.addEventListener('animationend', e => {
+
+        let button = e.currentTarget;
+
+        button.classList.remove('blink');
+
+    }, {once: true});
+}
+
 const win = () => {
 
     let bigBlock = document.querySelector('#t0');
@@ -1366,7 +1526,12 @@ const aiPlay = ({init = true} = {}) => {
         let cells = document.querySelectorAll('.cell');
 
         if (win()) {
+
             console.log('WIN');
+
+            document.body.addEventListener('touchstart', blink);
+            document.body.addEventListener('mousedown', blink);
+
             slideOut();
             return;
         }
@@ -1401,7 +1566,8 @@ const aiPlay = ({init = true} = {}) => {
     
         tile.style.transform = `translate(${Math.round(matrix.m41 - (rectTile.left - rectCell.left))}px, ${Math.round(matrix.m42 - (rectTile.top - rectCell.top))}px)`;
 
-        timer = setTimeout(() => makeMove(), 300);
+        // timer = setTimeout(() => makeMove(), 300);
+        timer = setTimeout(() => makeMove(), 150);
     }
 
     if (init) {
@@ -1478,18 +1644,78 @@ const aiMode = () => {
     let mode = urlParams.get('mode');
     
     return mode == 'ai';
+
+    // return true;
+
 }
+
+const saveBoard = () => {
+
+    let board = [];
+    let tiles = document.querySelectorAll('.tile');
+
+    if (aiMode()) return;
+    
+    tiles.forEach(tile => board.push(Number(tile.dataset.pos)));
+
+    let boardExp = {
+
+        board,
+        expiry: Date.now() + 1000 * 60 * 60 * 24 * 7
+    }
+
+    localStorage.setItem('board', JSON.stringify(boardExp));
+}
+
+const checkStorage = () => {
+
+    if (aiMode() || localStorage.getItem('board') == null) return null;
+
+    let boardStr = JSON.parse(localStorage.getItem('board'));
+
+    if (Date.now() > boardStr.expiry) return null;
+
+    return boardStr.board;
+}
+
+const cover = () => {
+
+    let tiles = document.querySelectorAll('.tile');
+    let cell = document.querySelector('.cell');
+    let glass = document.querySelector('#glass');
+
+    let rectGlass = glass.getBoundingClientRect();
+    let rectCell = cell.getBoundingClientRect();
+    let offsetLeft =  rectCell.left - rectGlass.left;
+    let offsetTop =  rectCell.top - rectGlass.top;
+    
+    glass.style.transform = `translate(${offsetLeft}px, ${offsetTop}px)`;
+
+    setTimeout(() => {
+        glass.classList.add('blur');
+
+        for (let i = 1; i < tiles.length; i++) {
+            tiles[i].classList.add('grayscale');
+        }
+
+    }, 1000);
+}
+
+
 
 const init = () => {
 
     disableTapZoom();
     setBoardSize();
     fillBoard();
+
+    // cover();
+
     showBoard();
     enableReset();
     enableTouch();
 
-    if (aiMode()) aiPlay();
+    if (aiMode()) setTimeout(aiPlay, 1000);
 }
 
 window.addEventListener('load', () => document.fonts.ready.then(init));

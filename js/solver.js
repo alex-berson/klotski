@@ -1,13 +1,13 @@
 const width = 4;
 const height = 5;
 
-const initBoard = () =>  [1,0,0,2,1,0,0,2,3,5,5,4,3,6,7,4,8,-1,-1,9];
+const initBoard = () => [1,0,0,2,1,0,0,2,3,5,5,4,3,6,7,4,8,-1,-1,9];
+
+const puzzleSolved = (board) => board[17] == 0 && board[18] == 0;
 
 const squareToCoords = (square) => [Math.floor(square / width), square % width];
 
 const coordsToSquare = (r, c) => r * width + c;
-
-const puzzleSolved = (board) => board[17] == 0 && board[18] == 0;
 
 const shuffle = (array) => {
 
@@ -21,36 +21,19 @@ const shuffle = (array) => {
     return array;
 }
 
-const getHash = (board) => {
+const getHashKey = (board) => {
 
-    let str = '';
+    let key = '';
     let table = ['S','v','v','v','v','h','s','s','s','s'];
 
     for (let i = 0; i < board.length; i++) {
 
         let block = board[i];
         
-        str += block == -1 ? ' ' : table[block];
+        key += block == -1 ? ' ' : table[block];
     }
 
-    return str;
-
-    // let values = new Map([
-    //     [-1, ' '], 
-    //     [0, 'S'], 
-    //     [1, 't'], 
-    //     [2, 't'], 
-    //     [3, 't'], 
-    //     [4, 't'], 
-    //     [5, 'w'], 
-    //     [6, 's'], 
-    //     [7, 's'], 
-    //     [8, 's'], 
-    //     [9, 's']
-    //   ]);
-
-    // return board.map(s => values.get(s)).join('');
-
+    return key;
 }
 
 const getBlocks = (board) => {
@@ -69,10 +52,10 @@ const getBlocks = (board) => {
 
 const getNextBoards = (board) => {
 
-    let offsets = [[1, 0],[-1, 0],[0, 1],[0, -1]];
-    let blocks = getBlocks(board);
     let newBoards = [];
-
+    let blocks = getBlocks(board);
+    let offsets = [[1, 0],[-1, 0],[0, 1],[0, -1]];
+    
     for (let [i, block] of blocks.entries()) {
 
         offsets.length = 4;
@@ -88,19 +71,19 @@ const getNextBoards = (board) => {
 
             for (let square of block) {
 
-                let [r0, c0] = squareToCoords(square);
-                let r = r0 + offset[0];
-                let c = c0 + offset[1];
+                let [r, c] = squareToCoords(square);
+                let r2 = r + offset[0];
+                let c2 = c + offset[1];
 
-                if (r < 0 || r >= height || c < 0 || c >= width) continue outer;
+                if (r2 < 0 || r2 >= height || c2 < 0 || c2 >= width) continue outer;
 
-                let newSquare = coordsToSquare(r, c);
+                let newSquare = coordsToSquare(r2, c2);
 
                 if (board[newSquare] != board[square] && board[newSquare] != -1) continue outer;
 
                 if ((Math.abs(offset[0]) == 2 || Math.abs(offset[1]) == 2) && 
-                    board[coordsToSquare(r0 + offset[0] / 2, c0 + offset[1] / 2)] != -1 &&
-                    board[coordsToSquare(r0 + offset[0] / 2, c0 + offset[1] / 2)] != board[square]) continue outer;
+                    board[coordsToSquare(r + offset[0] / 2, c + offset[1] / 2)] != -1 &&
+                    board[coordsToSquare(r + offset[0] / 2, c + offset[1] / 2)] != board[square]) continue outer;
 
                 newBoard[square] = -1;
 
@@ -158,11 +141,11 @@ const getSolution = (board) => {
 const bfs = () => {
 
     let queue = [];
-    let enqueued = new Set();
     let board = initBoard();
+    let visitedBoards = new Set();
 
     queue.push(board);
-    enqueued.add(getHash(board));
+    visitedBoards.add(getHashKey(board));
 
     while (queue.length > 0) {
 
@@ -173,11 +156,11 @@ const bfs = () => {
 
             nextBoard.prev = currentBoard;
 
-            if (enqueued.has(getHash(nextBoard))) continue;
+            if (visitedBoards.has(getHashKey(nextBoard))) continue;
             if (puzzleSolved(nextBoard)) return getSolution(nextBoard);
 
             queue.push(nextBoard);
-            enqueued.add(getHash(nextBoard));
+            visitedBoards.add(getHashKey(nextBoard));
         }
     }
 }

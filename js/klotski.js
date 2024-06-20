@@ -1,7 +1,5 @@
 const showBoard = () => document.body.style.opacity = 1;
 
-// const clearStorage = () => localStorage.removeItem('klotski-board');
-
 const setBoardSize = () => {
 
     let minSide = screen.height > screen.width ? screen.width : window.innerHeight;
@@ -13,20 +11,9 @@ const setBoardSize = () => {
 
 const fillBoard = () => {
 
-    // console.log(checkStorage());    
-
     let positions = [1,0,3,8,11,9,13,14,16,19];
-    // let positions = [1,0,13,8,14,9,3,7,16,19];
-    // let positions = [14,0,1,2,3,8,10,11,12,16];
-    // let positions = [12,0,1,2,3,10,8,9,15,19];
-    // let positions = [13,0,1,2,3,8,10,11,12,16];
-
     let cells = document.querySelectorAll('.cell');
     let blocks = document.querySelectorAll('.block');
-
-    // let savedBoard = checkStorage();
-
-    // if (savedBoard != null) positions = savedBoard;
 
     for (let [i, n] of positions.entries()) {
 
@@ -296,13 +283,10 @@ const endMove = (e) => {
 
             let block = e.currentTarget;
 
-            // saveBoard();
-
             block.classList.remove('return', 'selected', 'move', 'left', 'right', 'up', 'down');
 
             if (gameOver()) {
                 disableTouch();
-                // clearStorage();
                 slideOut();
             }
             
@@ -349,7 +333,6 @@ const resetGame = () => {
 
     if ([...blocks].some(block => block.classList.contains('move') || block.classList.contains('ai-move'))) return;
 
-    // clearStorage();
     enableTouch();
 
     for (let [i, blockNums] of shapes.entries()) {
@@ -476,25 +459,6 @@ const slideOut = () => {
     }, {once: true});
 }
 
-// const blink = () => {
-
-//     console.log('BLINK');
-
-//     let resetButton = document.querySelector('.arrows');
-
-//     if (resetButton.classList.contains('blink')) return;
-
-//     resetButton.classList.add('blink');
-
-//     resetButton.addEventListener('animationend', e => {
-
-//         let button = e.currentTarget;
-
-//         button.classList.remove('blink');
-
-//     }, {once: true});
-// }
-
 const gameOver = () => {
 
     let bigBlock = document.querySelector('#b0');
@@ -529,12 +493,6 @@ const aiPlay = ({init = true} = {}) => {
             return;
         }
 
-        // if (gameOver()) {
-        //     uncover();
-        //     setTimeout(slideOut, 500);
-        //     return;
-        // }
-
         if (document.hidden) return;
 
         let cells = document.querySelectorAll('.cell');
@@ -559,10 +517,9 @@ const aiPlay = ({init = true} = {}) => {
     
         block.style.transform = `translate(${matrix.m41 - (rectBlock.left - rectCell.left)}px, ${matrix.m42 - (rectBlock.top - rectCell.top)}px)`;
         timer = setTimeout(() => makeMove(), 300);
-        // timer = setTimeout(() => makeMove(), 150);
     }
 
-    let webWorker, timer, moves, savedMoves;
+    let webWorker, timer, moves;
     let timeDelay = init ? 2000 : 1000;
     let startTime = Date.now();
 
@@ -570,27 +527,24 @@ const aiPlay = ({init = true} = {}) => {
     disableReset();
 
     try {
+        
         webWorker = new Worker('./js/solver.js');
+
+        webWorker.addEventListener('message', e => {
+
+            aiPlay.savedMoves = moves = e.data;
+    
+            setTimeout(makeMove, timeDelay - (Date.now() - startTime));
+    
+            webWorker.terminate();
+        });
+
     } catch (e) {
 
-        moves = savedMoves;
-        // savedMoves = moves = [[8,16,17],[3,8,12],[5,9,8],[7,14,18],[4,11,10],[9,19,15],[7,18,19],[4,10,14],[5,8,10],[6,13,9],[6,9,8],[8,17,9],[4,14,13],[7,19,18],[9,15,19],[5,10,14],[8,9,11],[6,8,10],[4,13,9],[3,12,8],[7,18,16],[9,19,17],[5,14,18],[8,11,15],[6,10,11],[4,9,10],[3,8,9],[1,0,8],[0,1,0],[2,3,2],[6,11,3],[8,15,7],[4,10,11],[2,2,10],[0,0,1],[1,8,0],[3,9,8],[9,17,9],[7,16,17],[7,17,13],[5,18,16],[4,11,15],[2,10,14],[9,9,11],[0,1,5],[6,3,1],[8,7,3],[8,3,2],[9,11,3],[4,15,7],[2,14,15],[7,13,14],[7,14,18],[0,5,9],[8,2,6],[6,1,2],[1,0,1],[3,8,0],[0,9,8],[8,6,10],[6,2,6],[9,3,2],[4,7,3],[2,15,11],[7,18,19],[8,10,18],[0,8,9],[3,0,8],[1,1,0],[9,2,1],[6,6,5],[4,3,2],[2,11,3],[0,9,10],[6,5,13],[9,1,9],[1,0,1],[3,8,0],[9,9,8],[6,13,9],[5,16,12],[8,18,16],[7,19,17],[0,10,14],[6,9,11],[9,8,10],[5,12,8],[8,16,12],[7,17,16],[0,14,13]];
+        moves = aiPlay.savedMoves;
 
         setTimeout(makeMove, timeDelay - (Date.now() - startTime));
-        // setTimeout(makeMove, 2800); //
-    }
-    
-    webWorker.addEventListener('message', e => {
-
-        savedMoves = moves = e.data;
-
-        // savedMoves = moves = [[8,16,17],[3,8,12],[5,9,8],[7,14,18],[4,11,10],[9,19,15],[7,18,19],[4,10,14],[5,8,10],[6,13,9],[6,9,8],[8,17,9],[4,14,13],[7,19,18],[9,15,19],[5,10,14],[8,9,11],[6,8,10],[4,13,9],[3,12,8],[7,18,16],[9,19,17],[5,14,18],[8,11,15],[6,10,11],[4,9,10],[3,8,9],[1,0,8],[0,1,0],[2,3,2],[6,11,3],[8,15,7],[4,10,11],[2,2,10],[0,0,1],[1,8,0],[3,9,8],[9,17,9],[7,16,17],[7,17,13],[5,18,16],[4,11,15],[2,10,14],[9,9,11],[0,1,5],[6,3,1],[8,7,3],[8,3,2],[9,11,3],[4,15,7],[2,14,15],[7,13,14],[7,14,18],[0,5,9],[8,2,6],[6,1,2],[1,0,1],[3,8,0],[0,9,8],[8,6,10],[6,2,6],[9,3,2],[4,7,3],[2,15,11],[7,18,19],[8,10,18],[0,8,9],[3,0,8],[1,1,0],[9,2,1],[6,6,5],[4,3,2],[2,11,3],[0,9,10],[6,5,13],[9,1,9],[1,0,1],[3,8,0],[9,9,8],[6,13,9],[5,16,12],[8,18,16],[7,19,17],[0,10,14],[6,9,11],[9,8,10],[5,12,8],[8,16,12],[7,17,16],[0,14,13]];
-
-        setTimeout(makeMove, timeDelay - (Date.now() - startTime));
-        // setTimeout(makeMove, 2800); //
-
-        webWorker.terminate();
-    });
+    } 
 }
 
 const aiMode = () => {
@@ -600,69 +554,7 @@ const aiMode = () => {
     let mode = urlParams.get('mode');
     
     return mode == 'ai';
-
-    // return true;
 }
-
-// const saveBoard = () => {
-
-//     let board = [];
-//     let blocks = document.querySelectorAll('.block');
-
-//     if (aiMode()) return;
-    
-//     blocks.forEach(block => board.push(Number(block.dataset.pos)));
-
-//     let boardExp = {
-//         board,
-//         expiry: Date.now() + 1000 * 60 * 60 * 24 * 7
-//     }
-
-//     localStorage.setItem('klotski-board', JSON.stringify(boardExp));
-// }
-
-// const checkStorage = () => {
-
-//     if (aiMode() || localStorage.getItem('klotski-board') == null) return null;
-
-//     let boardStr = JSON.parse(localStorage.getItem('klotski-board'));
-
-//     if (Date.now() > boardStr.expiry) return null;
-
-//     return boardStr.board;
-// }
-
-// const uncover = () => {
-
-//     let blocks = document.querySelectorAll('.block');
-//     let glass = document.querySelector('#glass');
-
-//     glass.classList.remove('blur');
-
-//     for (let i = 1; i < blocks.length; i++) {
-//         blocks[i].classList.remove('grayscale');
-//     }   
-// }
-
-// const cover = () => {
-
-//     let blocks = document.querySelectorAll('.block');
-//     let cell = document.querySelector('.cell');
-//     let glass = document.querySelector('#glass');
-
-//     let rectGlass = glass.getBoundingClientRect();
-//     let rectCell = cell.getBoundingClientRect();
-//     let offsetLeft = rectCell.left - rectGlass.left;
-//     let offsetTop = rectCell.top - rectGlass.top;
-    
-//     glass.style.transform = `translate(${offsetLeft}px, ${offsetTop}px)`;
-
-//     glass.classList.add('blur');
-
-//     for (let i = 1; i < blocks.length; i++) {
-//         blocks[i].classList.add('grayscale');
-//     }
-// }
 
 const enableReset = () => {
 
@@ -718,7 +610,7 @@ const registerServiceWorker = () => {
 
 const init = () => {
 
-    // registerServiceWorker();
+    registerServiceWorker();
     disableTapZoom();
     setBoardSize();
     fillBoard();
@@ -727,14 +619,6 @@ const init = () => {
     enableTouch();
 
     if (aiMode()) setTimeout(aiPlay, 100);
-
-    // setTimeout(() => {
-
-    //     setTimeout(cover, 2000);
-    //     aiPlay();
-
-    // }, 1000);
-
 }
 
 window.onload = () => document.fonts.ready.then(init);

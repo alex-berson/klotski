@@ -148,7 +148,6 @@ span:nth-child(7) {
     cursor: pointer;
     border-radius: 7px;
     transition: opacity 0.2s ease-in-out;
-    /* transition: opacity 0.2s ease-in-out, background-color 0.5s ease; */
 }
 
 #b0 {
@@ -176,31 +175,12 @@ span:nth-child(7) {
     height: calc(var(--board-size) / var(--width) - var(--gap));
 }
 
-/* #glass {
-    position: absolute;
-    width: calc(var(--board-size) / var(--width) * var(--width) - var(--gap));
-    height: calc(var(--board-size) / var(--width) * var(--height) - var(--gap));
-    border-radius: 7px;
-    transition: backdrop-filter 0.5s ease;
-}
-
-.grayscale {
-    background-color: darkgray !important;
-}
-
-.blur {
-    background-color: rgba(255, 255, 255, 0);
-    -webkit-backdrop-filter: blur(30px);
-    backdrop-filter: blur(30px);
-} */
-
 .return {
     transition: all 0.1s linear;
 }
 
 .ai-move {
     transition: all 0.2s ease-in-out;
-    /* transition: all 0.1s ease-in-out; */
 }
 
 .invisible {
@@ -215,25 +195,6 @@ span:nth-child(7) {
     font-size: 8.8px;
     margin-top: -10.1px;
 }
-
-/* @keyframes blink {
-
-    0% {
-        opacity: 1; 
-    }
-  
-    50% {
-        opacity: 0.5; 
-    } 
-
-    100% {
-        opacity: 0.5;
-    } 
-} */
-
-/* .blink {
-    animation: blink 0.1s ease-in-out forwards;
-} */
 
 @keyframes rotate {
 
@@ -279,21 +240,6 @@ span:nth-child(7) {
     #designed {
         color: var(--gray);
     }
-
-    /* @keyframes blink {
-
-        0% {
-            fill: black; 
-        }
-      
-        50% {
-            fill: #7f5d0b; 
-        } 
-    
-        100% {
-            fill: black;
-        } 
-    } */
 }
 
 @media (orientation: landscape) and (max-height: 460px) {

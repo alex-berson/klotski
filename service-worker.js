@@ -4,6 +4,7 @@ const files = [
   'index.html',
   'css/style.css',
   'js/klotski.js',
+  'js/solver.js',
   'images/arrows.svg',
   'fonts/helvetica-regular.woff',
   'fonts/helvetica-bold.woff'
